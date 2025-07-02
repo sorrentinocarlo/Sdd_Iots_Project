@@ -1,0 +1,4 @@
+deviceBackend/AttendanceSystem/credentials.json
+deviceBackend/AttendanceSystem/scripts/token.pickle
+remoteAccessAPI/AttendanceSystem/credentials.json
+remoteAccessAPI/token.pickle

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Users</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: rgb(238, 238, 238);
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            background: rgb(241, 158, 56);
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        .header h1, .header a {
+            margin: 0 10px;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: row;
+            padding-top: 60px;
+            align-items: flex-start;
+            justify-content: center;
+            overflow-x: auto;
+            margin-top: 50px;
+            height: calc(100vh - 50px);
+            width: 100%;
+        }
+
+        .form-container, .list-container {
+            border: 1px solid #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 20px;
+            padding: 30px;
+            min-width: 300px;
+            max-width: 400px;
+            box-shadow: 0 0 20px rgba(57, 86, 124, 0.5);
+            border-radius: 20px;
+            background: rgba(57, 125, 161, 0.8);
+        }
+
+        h1, h2 {
+            margin-bottom: 10px;
+        }
+
+        input[type="text"], input[type="password"], button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #395670;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #F19E38;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+        }
+
+        li {
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        a {
+            color: #FFFFFF;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>Manage Users</h1>
+        </div>
+        <div>
+            <a href="/" style="color: #FFFFFF;">Back</a>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="form-container">
+            <form id="registerForm" action="/register" method="post">
+                <h2>Register New User</h2>
+                <br>
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit">Register</button>
+            </form>
+        </div>
+        <div class="list-container">
+            <h2>Current Users</h2>
+            <ul>
+                {% for user in users %}
+                <li>
+                    <span style="margin-right: 20px;">{{ user.username }}</span>
+                    <form action="{{ url_for('remove_user', user_id=user.id) }}" method="post">
+                        <button type="submit">Remove</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        document.getElementById('registerForm').onsubmit = function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            
+            const csrfToken = getCookie('csrf_access_token');
+
+            fetch('/register', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include',  
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken  
+                }
+            }).then(function(response) {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    return response.text().then(function(text) { throw new Error(text) });
+                }
+            }).then(function(body) {
+                window.location.reload(); 
+            }).catch(function(error) {
+                alert('Error: ' + error.message); 
+            });
+        };
+
+        document.querySelectorAll('form[action^="/remove_user"]').forEach(function(form) {
+            form.onsubmit = function(event) {
+                event.preventDefault();
+                const csrfToken = getCookie('csrf_access_token');
+                const formData = new FormData(this);
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include',  
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken  
+                    }
+                }).then(function(response) {
+                    if (response.ok) {
+                        window.location.reload(); 
+                    } else {
+                        return response.text().then(function(text) { throw new Error(text) });
+                    }
+                }).catch(function(error) {
+                    alert('Error: ' + error.message); 
+                });
+            };
+        });
+    </script>
+     
+</body>
+</html>

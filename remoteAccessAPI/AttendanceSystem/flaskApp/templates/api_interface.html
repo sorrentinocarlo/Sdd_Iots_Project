@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>API Interface</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: rgb(238, 238, 238);
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            background: rgb(241, 158, 56);
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        .header h1, .header a {
+            margin: 0 10px;
+        }
+
+        .available-operations {
+            position: absolute;
+            top: 100px; 
+            left: 50%;
+            transform: translateX(-50%);
+            color: black;
+            font-size: 1.2em;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            padding: 220px 20px 20px 20px; 
+            overflow-x: auto;
+            white-space: nowrap;
+            height: 400px;
+        }
+
+        .response-box {
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 50px;
+            padding: 10px;
+            border: 2px solid #ccc;
+            background-color: white; 
+            border-radius: 5px;
+            width: calc(100% - 40px);
+            height: 20%;
+            overflow-y: auto;
+            max-height: 300px;
+            min-height: 100px;
+            color: black; 
+        }
+
+        form {
+            border: 1px solid #ccc;
+            padding: 30px;
+            box-shadow: 0 0 30px 0 rgba(57, 86, 124);
+            border-radius: 20px;
+            background: rgba(57, 125, 161, 0.8);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 20px;
+            min-width: 285px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 210px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 220px;
+            padding: 10px;
+            background-color: #395670;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #F19E38;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>Welcome to the Attendance System's API Interface</h1>
+        </div>
+        <div>
+            <a href="/users" style="color: #ffffff;">Manage Users</a>
+            <br>
+            <a href="/logout" style="color: #ffffff;">Logout</a>
+        </div>
+    </div>
+
+    <div class="available-operations">
+        <h1>Available Operations:</h1>
+
+    </div>
+
+    <br>
+
+    <div class="container">
+        <form id="countRegistrationsForm">
+            <h2>Count Registrations</h2>
+            <br>
+            <input type="text" name="course_name" placeholder="Course Name" required>
+            <button type="submit">Get Registrations</button>
+        </form>
+
+        <form id="countAttendancesForm">
+            <h2>Count Lesson Attendances</h2>
+            <br>
+            <input type="text" name="course_name" placeholder="Course Name" required>
+            <input type="text" name="lesson_name" placeholder="Lesson Name" required>
+            <button type="submit">Get Attendances</button>
+        </form>
+
+        <form id="countExamParticipationsForm">
+            <h2>Count Exam Participations</h2>
+            <br>
+            <input type="text" name="course_name" placeholder="Course Name" required>
+            <input type="text" name="exam_date" placeholder="Exam Date" required>
+            <button type="submit">Get Participations</button>
+        </form>
+
+        <form id="getRecordsForm">
+            <h2>Get Transactions Record</h2>
+            <br>
+            <input type="text" name="operation_type" placeholder="Operation Type" required>
+            <input type="text" name="course_name" placeholder="Course Name" required>
+            <input type="text" name="additional_info" placeholder="Additional Info (Blank If Not Needed)" required>
+            <button type="submit">Get Records</button>
+        </form>
+    </div>
+
+    <div class="response-box" id="responseBox">
+        <!-- Responses will be displayed here -->
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Handle submission for "Count Registrations" form
+            $('#countRegistrationsForm').submit(function(e) {
+                e.preventDefault(); // Prevent the default form submission behavior
+                var courseName = $('input[name="course_name"]', this).val(); // Get the value from the input field
+                $.ajax({
+                    url: '/count_registrations/' + encodeURIComponent(courseName),
+                    type: 'GET',
+                    success: function(result) {
+                        // Generating and displaying results in a table format
+                        var tableHtml = '<table border="1" style="width: 100%; text-align: left;">';
+                        tableHtml += '<tr><th>Course Name</th><th>Registrations</th></tr>';
+                        tableHtml += '<tr>';
+                        tableHtml += '<td>' + courseName + '</td>';
+                        tableHtml += '<td>' + result.registrations + '</td>'; // Assuming result has registrations field
+                        tableHtml += '</tr>';
+                        tableHtml += '</table>';
+                        $('#responseBox').html(tableHtml);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#responseBox').html("Error: " + xhr.responseText); // Display error message in the response box
+                    }
+                });
+            });
+
+            // Handle submission for "Count Lesson Attendances" form
+            $('#countAttendancesForm').submit(function(e) {
+                e.preventDefault();
+                var courseName = $('input[name="course_name"]', this).val();
+                var lessonName = $('input[name="lesson_name"]', this).val();
+                $.ajax({
+                    url: '/count_attendances/' + encodeURIComponent(courseName) + '/' + encodeURIComponent(lessonName),
+                    type: 'GET',
+                    success: function(result) {
+                        // Generating and displaying results in a table format
+                        var tableHtml = '<table border="1" style="width: 100%; text-align: left;">';
+                        tableHtml += '<tr><th>Course Name</th><th>Lesson Name</th><th>Attendances</th></tr>';
+                        tableHtml += '<tr>';
+                        tableHtml += '<td>' + courseName + '</td>';
+                        tableHtml += '<td>' + lessonName + '</td>';
+                        tableHtml += '<td>' + result.attendances + '</td>'; // Assuming result has attendances field
+                        tableHtml += '</tr>';
+                        tableHtml += '</table>';
+                        $('#responseBox').html(tableHtml);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#responseBox').html("Error: " + xhr.responseText);
+                    }
+                });
+            });
+
+            // Handle submission for "Count Exam Participations" form
+            $('#countExamParticipationsForm').submit(function(e) {
+                e.preventDefault();
+                var courseName = $('input[name="course_name"]', this).val();
+                var examDate = $('input[name="exam_date"]', this).val(); // Supponiamo che il formato inserito sia "GG/MM/AAAA"
+                
+                // Splittiamo la data in giorno, mese e anno
+                var dateParts = examDate.split('/');
+                var examDay = dateParts[0];
+                var examMonth = dateParts[1];
+                var examYear = dateParts[2];
+
+                $.ajax({
+                    url: '/count_exam_participations/' + encodeURIComponent(courseName) + '/' + encodeURIComponent(examDay) + '/' + encodeURIComponent(examMonth) + '/' + encodeURIComponent(examYear),
+                    type: 'GET',
+                    success: function(result) {
+                        // Generating and displaying results in a table format
+                        var tableHtml = '<table border="1" style="width: 100%; text-align: left;">';
+                        tableHtml += '<tr><th>Course Name</th><th>Exam Date</th><th>Participations</th></tr>';
+                        tableHtml += '<tr>';
+                        tableHtml += '<td>' + courseName + '</td>';
+                        tableHtml += '<td>' + examDate + '</td>';
+                        tableHtml += '<td>' + result.participations + '</td>';
+                        tableHtml += '</tr>';
+                        tableHtml += '</table>';
+                        $('#responseBox').html(tableHtml);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#responseBox').html("Error: " + xhr.responseText);
+                    }
+                });
+            });
+
+        
+            
+            // Handle submission for "Get Transactions Record" form
+            $('#getRecordsForm').submit(function(e) {
+                e.preventDefault();
+                var operationType = $('input[name="operation_type"]', this).val();
+                var courseName = $('input[name="course_name"]', this).val();
+                var additionalInfo = $('input[name="additional_info"]', this).val();
+                var urlPath;
+
+                // Check if operation type is "Esame"
+                if (operationType === "Esame") {
+                    // Treat additional_info as exam date
+                    var dateParts = additionalInfo.split('/');
+                    var examDay = dateParts[0];
+                    var examMonth = dateParts[1];
+                    var examYear = dateParts[2];
+                    
+                    // Update URL path for exam date format
+                    urlPath = '/get_records_by_operation/' + encodeURIComponent(operationType) + '/' +
+                            encodeURIComponent(courseName) + '/' + encodeURIComponent(examDay) + '/' +
+                            encodeURIComponent(examMonth) + '/' + encodeURIComponent(examYear);
+                } else {
+                    // Default URL path
+                    urlPath = '/get_records_by_operation/' + encodeURIComponent(operationType) + '/' +
+                            encodeURIComponent(courseName) + '/' + encodeURIComponent(additionalInfo);
+                }
+
+                $.ajax({
+                    url: urlPath,
+                    type: 'GET',
+                    success: function(result) {
+                        var tableHtml = '<table border="1" style="width: 100%; text-align: left;">';
+                        tableHtml += '<tr><th>Operation_Type</th><th>Course_Name</th><th>Additional_Info</th><th>Student_ID</th></tr>';
+                        result.forEach(function(item) {
+                            tableHtml += '<tr>';
+                            tableHtml += '<td>' + item.operationType + '</td>';
+                            tableHtml += '<td>' + item.courseName + '</td>';
+                            tableHtml += '<td>' + item.additionalInfo + '</td>';
+                            tableHtml += '<td>' + item.encryptedId + '</td>';
+                            tableHtml += '</tr>';
+                        });
+                        tableHtml += '</table>';
+                        $('#responseBox').html(tableHtml);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#responseBox').html("Error: " + xhr.responseText);
+                    }
+                });
+            });
+
+
+        });
+        </script>
+        
+    </script>
+</body>
+</html>
